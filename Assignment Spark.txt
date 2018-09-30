@@ -1,0 +1,73 @@
+assignment Spark
+
+Question1
+
+a)
+
+val airportRDD = sc.textFile("/user/b-analytics/assignment/airports.text") # import file
+val greekairportsRDD = airportRDD.filter(line=>line.contains("Greece")) # filter out lines with greek airports only
+val greekairportsRDD2 = greekairportsRDD.map(line=>line.split(","))  # split each line by word
+val greekairportsRDD3 = greekairportsRDD2.map(vals=>(vals(1),vals(2),vals(4))) # take only required columns
+greekairportsRDD3.collect().foreach(println)
+b)
+
+val airportRDD = sc.textFile("/user/b-analytics/assignment/airports.text") # import file
+val airportlat=airportRDD.filter(_.split(",")(6).toDouble>37).filter(_.split(",")(6).toDouble<39).map(_.split(",")) # split each line by word,convert latitude (string) to double and apply limitations 
+val airportlatfinal = airportlat.map(vals=>(vals(1),vals(2),vals(6))) # choose only the required values
+
+
+
+
+Question2
+
+a)
+
+val nasajulyRDD = sc.textFile("/user/b-analytics/assignment/nasa_19950701.tsv")
+val nasaaugustRDD = sc.textFile("/user/b-analytics/assignment/nasa_19950801.tsv")
+
+val nasajulyRDD1  = nasajulyRDD.map(line=>line.split("\t")).map(word => (word(0), 1)).reduceByKey((a,b)=>a+b)
+val nasaaugustRDD1 = nasaaugustRDD.map(line=>line.split("\t")).map(word => (word(0), 1)).reduceByKey((a,b)=>a+b)
+
+val nasajoinedRDD = nasajulyRDD1.join(nasaaugustRDD1)
+val nasajoinedRDD1 = nasajoinedRDD.map(t=>(t._1)).filter((t)=>t !="host")
+
+
+
+b)
+
+val wordRDD  = sc.textFile("/user/b-analytics/assignment/word_count.text") // import the text file
+val wordcountRDD  = wordRDD.flatMap(line=>line.split(" ")).map(word=>(word,1)).reduceByKey((a,b)=>a+b) // split the file to every space meaning take each word,then create a key value pair for each word and the number "1".Finally the reduceByKey will group all the same kyes and add their values. So we have an RDD of the form (word,total frequency of the word in text)
+val wordcountRDD1 = wordcountRDD.map(t=>(t._2,t._1)) // transpose key and values to sort by the total number of occurences if each word
+val wordcountRDD2 = wordcountRDD1.sortByKey(false) // sort the kyes in descending order
+val wordcountRDD3 = wordcountRDD2.map(t=>(t._2,t._1) // transpose again to get the required form 
+
+Question3
+
+a)
+
+val houseRDD = sc.textFile("/user/b-analytics/assignment/Real.csv")
+val headerhouse = houseRDD.first()
+val houseRDD1 = houseRDD.filter(row=>row!=headerhouse)
+val houseRDD2 = houseRDD1.map(r => (r.split(",")(3).toInt, r.split(",")(2).toDouble))
+val houseaverage = houseRDD2.groupByKey().map(t=>(t._1, t._2.sum/t._2.size))
+
+b)
+
+val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+import sqlContext.implicits._
+case class house(Location:String,Price:Double,Pricesqf:Double)
+
+
+val housesql  = sc.textFile("/user/b-analytics/assignment/Real.csv")
+val housesql2 = housesql.first()
+val housesql3 = housesql.filter(row=>row!=housesql2)
+val housesql4 = housesql3.map(_.split(","))
+val housesql5 = housesql4.map(p=>house(p(1),p(2).trim.toDouble,p(6).trim.toDouble)).toDF()
+housesql5.registerTempTable(“House”)
+val housefinal = sqlContext.sql("SELECT Location,AVG(Pricesqf), MAX(Price) FROM House GROUP BY Location")
+
+
+
+
+
+
