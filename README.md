@@ -1,2 +1,4 @@
 # Apache-Spark-using-Scala
-fundamental functionality of Spark Core and Spark SQL library.
+
+
+Find all information regarding this projrct in big_data_systems_assignment_2018.pdf file
