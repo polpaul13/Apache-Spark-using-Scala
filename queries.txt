@@ -63,7 +63,7 @@ val housesql2 = housesql.first()
 val housesql3 = housesql.filter(row=>row!=housesql2)
 val housesql4 = housesql3.map(_.split(","))
 val housesql5 = housesql4.map(p=>house(p(1),p(2).trim.toDouble,p(6).trim.toDouble)).toDF()
-housesql5.registerTempTable(ìHouseî)
+housesql5.registerTempTable(‚ÄúHouse‚Äù)
 val housefinal = sqlContext.sql("SELECT Location,AVG(Pricesqf), MAX(Price) FROM House GROUP BY Location")
 
 
